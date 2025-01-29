@@ -1,0 +1,84 @@
+time += 1
+
+scroll -= 2
+
+#restart music
+if not pygame.mixer.music.get_busy():
+    music_pos = 0
+    play_music(theme_music[theme])
+
+menu_pos[0] = smooth(menu_pos[0]+5,-(mouse_pos[0])/20,15)
+menu_pos[1] = smooth(menu_pos[1],-(mouse_pos[1])/30,15)
+
+menu_size = smooth(menu_size,global_scale+1,5)
+
+display_image(sprites['menu'][frame],menu_pos,menu_size)
+
+if opacity < 80:
+    opacity += 5
+
+transparent_surf.set_alpha(opacity)
+screen.blit(transparent_surf,(0,0))
+
+if time%2 == 0:
+    frame2 += 1
+    frame2 %= 12
+    
+if time%10 == 0:
+    time = 0
+    frame += 1
+    frame %= 4
+
+text = font.render('- A GAME BY -',True,(0,0,0))
+display_image(text,(0,scroll),1)
+text = font.render('just_banana3',True,(255,200,50))
+display_image(text,(0,scroll+100),1)
+
+text = font.render('- ART/IMAGES -',True,(0,0,0))
+display_image(text,(0,scroll+500),1)
+text = font.render('just_banana3',True,(255,200,50))
+display_image(text,(0,scroll+600),1)
+
+text = font.render('- PROGRAMMING -',True,(0,0,0))
+display_image(text,(0,scroll+1000),1)
+text = font.render('just_banana3',True,(255,200,50))
+display_image(text,(0,scroll+1100),1)
+
+text = font.render('- PLAYTESTERS -',True,(0,0,0))
+display_image(text,(0,scroll+1500),1)
+text = font.render('just_banana3',True,(255,200,50))
+display_image(text,(0,scroll+1600),1)
+
+text = font.render('- MUSIC -',True,(0,0,0))
+display_image(text,(0,scroll+2000),1)
+
+text = font.render('Local Forecast',True,(50,200,255))
+display_image(text,(0,scroll+2100),1)
+text = font.render('Kevin MacLeod',True,(50,255,200))
+display_image(text,(0,scroll+2200),1)
+
+text = font.render('Snap Along',True,(50,200,255))
+display_image(text,(0,scroll+2400),1)
+text = font.render('Magical Tunes',True,(50,255,200))
+display_image(text,(0,scroll+2500),1)
+
+text = font.render('Jazz in Paris',True,(50,200,255))
+display_image(text,(0,scroll+2700),1)
+text = font.render('YouTube music library',True,(255,0,51))
+display_image(text,(0,scroll+2800),1)
+
+text = font.render('The Duel, Crazy Daze, Christmas Jazz',True,(50,200,255))
+display_image(text,(0,scroll+3000),0.6)
+text = font.render('Mixkit',True,(56,59,118))
+display_image(text,(0,scroll+3100),1)
+
+text = font.render('- IDEAS -',True,(0,0,0))
+display_image(text,(0,scroll+3600),1)
+text = font.render('My mom',True,(200,50,255))
+display_image(text,(0,scroll+3700),1)
+
+if key[pygame.K_DOWN] or key[pygame.K_SPACE]:
+    scroll -= 10
+
+if button(2,(350,-250)) or (key[pygame.K_ESCAPE] and not key_pressed) or scroll < -4200:
+    mode = 'options'

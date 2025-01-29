@@ -1,0 +1,86 @@
+time += 1
+
+#restart music
+if not pygame.mixer.music.get_busy():
+    music_pos = 0
+    play_music(theme_music[theme])
+
+menu_pos[0] = smooth(menu_pos[0],-(mouse_pos[0])/20+100,15)
+menu_pos[1] = smooth(menu_pos[1],-(mouse_pos[1])/30,15)
+
+menu_size = smooth(menu_size,global_scale+1,5)
+
+if fancy:
+    display_image(sprites['menu'][frame],menu_pos,menu_size)
+else:
+    display_image(sprites['menu'][frame])
+
+if opacity < 50:
+    opacity += 5
+if opacity > 50:
+    opacity -= 5
+
+transparent_surf.set_alpha(opacity)
+screen.blit(transparent_surf,(0,0))
+
+if time%10 == 0:
+    time = 0
+    frame += 1
+    frame %= 4
+
+display_image(sprites['options'][2],(0,0))
+
+display_image(sprites['options'][1],((global_volume-0.5)*2*150,0))
+if mid[0]-150 < mouse_pos[0] < mid[0]+150 and mid[1]-100 < mouse_pos[1] < mid[1]+100:
+    if mouse_click[0] or clicked:
+        clicked = True
+        
+        global_volume = round(((mouse_pos[0]-mid[0])/2/150)+0.5,1)
+
+        global_volume = min(max(global_volume,0),1)
+        
+        if global_volume%1 == 0:
+            global_volume = int(global_volume)
+        
+        update_volume()
+
+if not mouse_click[0]:
+    clicked = False
+
+text = font.render(f'{global_volume}',True,(0,0,0))
+display_image(text,(0,-100),1)
+
+text = font.render('Hitboxes and FPS',True,(0,0,0))
+display_image(text,(300,-140),0.5)
+
+if check_click(display_image(sprites['options'][4 if hitboxes else 3],(300,-10))):
+    if hitboxes:
+        hitboxes = False
+    else:
+        hitboxes = True
+    play_sound('click')
+
+text = font.render('Rotation and scaling',True,(0,0,0))
+display_image(text,(-300,-140),0.5)
+
+if check_click(display_image(sprites['options'][6 if fancy else 7],(-300,-10))):
+    if fancy:
+        fancy = False
+    else:   
+        fancy = True
+    play_sound('click')
+
+text = font.render('Fancy' if fancy else 'Potato',True,(0,0,0))
+display_image(text,(-300,100),0.5)
+
+if button(12,(260,200)):
+    mode = 'reset'
+
+if button(13,(300,-250)):
+    scroll = 500
+    mode = 'credits'
+
+if button(10,(-260,200)) or (key[pygame.K_ESCAPE] and not key_pressed):
+    mode = 'menu'
+    
+    load_sprites(['title'])

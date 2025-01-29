@@ -1,0 +1,337 @@
+speed = target_speed#/(fps/60)
+
+time += speed
+
+background_pos += speed
+background_pos %= 80
+
+#restart music
+if not pygame.mixer.music.get_busy():
+    music_pos = 0
+    play_music(theme_music[theme])
+
+boost = boost_time >= 60*10
+
+if boost:
+    if key[pygame.K_RIGHT]:
+        player_vel += 2
+    if key[pygame.K_LEFT]:
+        player_vel -= 2
+
+    player_vel *= 0.9
+else:
+    if key[pygame.K_RIGHT]:
+        player_vel += 0.9
+    if key[pygame.K_LEFT]:
+        player_vel -= 0.9
+
+    player_vel *= 0.95
+
+player_pos += player_vel
+
+display_image(sprites['background'][theme],(50-background_pos,50-background_pos))
+
+
+#people
+if people_pos[1] > -500:
+    display_image(sprites['people'][0],people_pos)
+    people_pos[0] -= speed
+    people_pos[1] -= speed
+
+if time%10 == 0:
+    papers.append([player_pos-40,player_y+5])
+    
+    papers[-1][0] = round((papers[-1][0]+5-background_pos)/10)*10+background_pos-5
+    # papers[-1][1] = round((papers[-1][1]+5+background_pos)/10)*10-background_pos-5
+    
+    paper_type.append(1 if time%40 == 0 else 0)
+    frame += 1
+    frame %= 4
+
+if time == 40:
+    score += 1
+    
+    speed_time += 1
+    speed_time %= 2
+
+time %= 40
+
+#spawn obstacles
+if obstacle_timer == 0:
+    obstacles.append([randint(-100,950),mid[1]+200])
+    obstacle_types.append(randint(0,len(sprites['obstacle'])-2))
+    
+    obstacles[-1][0] = round((obstacles[-1][0]+background_pos)/10)*10-background_pos
+    obstacles[-1][1] = round((obstacles[-1][1]+background_pos)/10)*10-background_pos
+    
+    obstacle_timer = randint(30,120)
+else:
+    obstacle_timer -= 1
+
+#spawn money
+if money_timer == 0:
+    money.append([randint(-100,900),mid[1]+100])
+    
+    money[-1][0] = round((money[-1][0]+background_pos)/10)*10-background_pos
+    money[-1][1] = round((money[-1][1]+background_pos)/10)*10-background_pos
+    
+    if randint(1,10) == 1:
+        money_types.append(2)
+    elif randint(1,5) == 1:
+        money_types.append(1)
+    else:
+        money_types.append(0)
+        
+    money_timer = randint(60,240)
+
+money_timer -= 1
+
+for i in range(len(obstacles)):
+    obstacles[i][0] -= speed
+    obstacles[i][1] -= speed
+    
+for i in range(len(money)):
+    money[i][0] -= speed
+    money[i][1] -= speed
+
+if len(obstacles) > 0:
+    if obstacles[0][1] < -mid[1]:
+        del obstacles[0]
+        del obstacle_types[0]
+    
+if len(money) > 0:
+    if money[0][1] < -mid[1]:
+        del money[0]
+        del money_types[0]
+
+#paper
+for i in range(len(papers)):
+    papers[i][0] -= speed
+    papers[i][1] -= speed
+    display_image(sprites['paper'][paper_type[i]],papers[i])
+
+if len(papers) > 0:
+    if papers[0][1] < -mid[1]:
+        del papers[0]
+        del paper_type[0]
+
+obstacle_rects = []
+
+#separate front and back
+front = []
+back = []
+for position,skin in zip(obstacles,obstacle_types):
+    if position[1] < player_y+60:
+        back.append([position,skin])
+    else:
+        front.append([position,skin])
+
+#obstacles back
+for position,skin in back:
+    rect = display_image(sprites['obstacle'][skin],position,anchor='br')
+    
+    if hitboxes:
+        pygame.draw.circle(screen,(0,255,0),(position[0]+mid[0],position[1]+mid[1]),20,2)
+    
+    obstacle_rects.append(rect)
+
+if dent_pos[0] > -mid[0]-20:
+    dent_pos[0] -= speed
+    dent_pos[1] -= speed
+
+display_image(sprites['smack'][1+theme],dent_pos)
+
+if smack_time > 0:
+    smack_time -= 1
+
+#smack
+if player_pos > 390:
+    if player_vel > 8:
+        smack_time = 3
+        dent_pos = [435,player_y]
+        dent_pos[0] = round((dent_pos[0]-background_pos)/10)*10+background_pos
+        dent_pos[1] = round((dent_pos[1]-background_pos)/10)*10+background_pos
+        
+        play_sound(['clink','thud','thomp','clang','honk','bonk','small_cow','large_cow'][randint(0,7)])
+    
+    player_pos = 390
+    player_vel /= -2
+
+elif player_pos < -450:
+    if player_vel < -8:
+        smack_time = 3
+        play_sound(['clink','thud','thomp','clang','honk','bonk','small_cow','large_cow'][randint(0,7)])
+    
+    player_pos = -450
+    player_vel /= -2
+
+if smack_time > 0 and player_pos > 0:
+    display_image(sprites['smack'][0],(player_pos+60,-110))
+
+#speed
+if boost_time > 60*12:
+    display_image(sprites['speed'][speed_time],(player_pos-100,player_y-100))
+
+#player
+player_rect = display_image(sprites['roll'][frame],(player_pos,player_y))
+display_image(sprites['skin'][theme],(player_pos+skin_pos[theme][0],player_y+skin_pos[theme][1]))
+
+if smack_time > 0 and player_pos < 0:
+    display_image(sprites['smack'][0],(player_pos-20,-100),angle=180)
+
+#obstacles front (deadly)
+hit = False
+for i in range(len(front)):
+    position = front[i][0]
+    skin = front[i][1]
+    
+    rect = display_image(sprites['obstacle'][skin],position,anchor='br')
+    if hitboxes:
+        pygame.draw.circle(screen,(0,255,0),(position[0]+mid[0],position[1]+mid[1]),20,2)
+    if rect.colliderect(player_rect) and position[1]-player_y < 100 and obstacle_types[i] != -1:
+        if boost:
+            play_sound(['pop','pop2'][randint(0,1)])
+            obstacle_types[i] = -1
+        else:
+            hit_timer += 1
+            hit = True
+    else:
+        if not hit:
+            hit_timer = 0
+
+    obstacle_rects.append(rect)
+
+#bullets destroy obstacles
+for i in range(len(obstacle_rects)):
+    for j in range(len(bullets)):
+        bullet = bullets[j][:]
+        bullet[0] += mid[0]
+        bullet[1] += mid[1]
+        
+        if obstacle_rects[i].collidepoint(bullet) and obstacle_types[i] != -1:
+            play_sound(['pop','pop2'][randint(0,1)])
+            obstacle_types[i] = -1
+
+#lose
+if hit_timer >= 4:
+    mode = 'lose'
+    
+    number = randint(0,len(kill_effects)-1)
+    kill_effect = kill_effects[number]
+    kill_frames = [kill_effect+i for i in range(kill_effect_length[number])]
+    
+    done = False
+    
+    opacity = 0
+    
+    pos = -500
+    
+    time = randint(0,1000)
+    
+    stop_music()
+
+    play_sound('crash')
+    
+    load_sprites(['kill_effect'])
+
+#money collide
+i = -1
+for _ in range(len(money)):
+    i += 1
+    position = money[i]
+    skin = money_types[i]
+    rect = display_image(sprites['money'][skin],position,anchor='br')
+    if rect.colliderect(player_rect):
+        if money_types[i] == 0:
+            total_money += 1
+            play_sound('coin')
+        elif money_types[i] == 1:
+            total_money += 5
+            play_sound('diamond')
+        elif money_types[i] == 2:
+            play_sound('power_up')
+            gun_time = 60*10
+        
+        del money[i]
+        del money_types[i]
+        
+        i -= 1
+        continue
+
+text = font.render(f'${total_money}',True,(0,150,0))
+
+screen.blit(text,(20,0))
+
+text = font.render(f'{score}',True,(0,0,0))
+
+if score > high_score:
+    high_score = score
+
+screen.blit(text,(res[0]-20-text.get_width(),0))
+
+if opacity > 0:
+    opacity -= 5
+
+transparent_surf.set_alpha(opacity)
+screen.blit(transparent_surf,(0,0))
+
+#pause
+if key[pygame.K_p] or key[pygame.K_ESCAPE] or not focus:
+    if not clicked:
+        clicked = True
+        
+        mode = 'pause'
+
+        update_volume(0.3)
+
+        replace_music(theme_music[theme]+' muffled',0.05)
+
+        time2 = randint(0,1000)
+else:
+    clicked = False
+
+#machine gun
+if gun_time > 0:
+    if time%20 == 0:
+        bullets.append([player_pos,player_y])
+        play_sound('switch')
+    
+    gun_time -= 1
+    
+    display_image(sprites['machine_gun'][0],(player_pos+5,player_y+5))
+
+for i in range(len(bullets)):
+    bullets[i][0] += 20
+    bullets[i][1] += 20
+    display_image(sprites['machine_gun'][1],bullets[i])
+    if hitboxes:
+        pygame.draw.circle(screen,(0,0,255),(bullets[i][0]+mid[0],bullets[i][1]+mid[1]),20,2)
+
+if len(bullets) > 0:
+    if bullets[0][1] > mid[1]:
+        del bullets[0]
+
+#boost
+if boost:
+    target_speed = 10
+    button(9,(300,200))
+elif boost_time > 0:
+    target_speed = 5
+    button(9,(300,200))
+else:
+    target_speed = 5
+    if button(8,(300,200)) or (key[pygame.K_SPACE] and not key_pressed):
+        target_speed = 10
+        boost_time = 60*20
+        time = 0
+        
+        speed_time = 0
+        
+        play_sound('rocket')
+
+if boost_time > 0:
+    boost_time -= 1
+
+if prev_boost and not boost:
+    time = 0
+        

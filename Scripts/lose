@@ -1,0 +1,122 @@
+def draw():
+    global opacity
+
+    display_image(sprites['background'][theme],(50-background_pos,50-background_pos))
+
+    display_image(sprites['smack'][1+theme],dent_pos)
+
+    #papers
+    for i in range(len(papers)):
+        display_image(sprites['paper'][paper_type[i]],papers[i])
+    
+    #obstacles
+    for position,skin in zip(obstacles,obstacle_types):
+        display_image(sprites['obstacle'][skin],position,anchor='br')
+
+    #money
+    for i in range(len(money)):
+        position = money[i]
+        skin = money_types[i]
+        display_image(sprites['money'][skin],position,anchor='br')
+    
+    #dim
+    if opacity < 100:
+        opacity += 5
+
+    transparent_surf.set_alpha(opacity)
+    screen.blit(transparent_surf,(0,0))
+    
+    #player
+    display_image(sprites['kill_effect'][frame],(player_pos,-100),size= 6 if number == 1 else 10,anchor='bottom' if number == 4 else False)
+
+def draw2():
+    global pos,time
+    
+    pos = smooth(pos,-200,10)    
+    display_image(sprites['title'][2],(0,pos),global_scale,math.sin(math.radians(time*1.5))*2)
+
+    time += 1
+
+for frame in kill_frames:
+    for i in range(kill_time[number]):
+        checkExit()
+                
+        draw()
+
+        if done:
+            
+            draw2()
+            
+            update_mouse()
+            update_keys()
+            
+            if button(7,(0,150),15) or (key[pygame.K_SPACE] and not key_pressed):
+                mode = 'menu'
+                
+                menu_pos = [0,0]
+                menu_size = global_scale+2
+                
+                frame = 0
+                frame2 = 0
+                time = 0
+                opacity = 0
+                                
+                update_volume(0.6)
+                play_music('elevator')
+                
+                unload_sprites(['background','obstacle','money','roll','paper','skin','smack','people','machine_gun','kill_effect','speed'])
+
+                break
+        
+        if hitboxes:
+            show_fps()
+
+        update_key_pressed()
+        
+        pygame.display.update()
+        clock.tick(60)
+
+    if mode == 'menu':
+        break
+
+if not done and kill_sound[number]:
+    play_sound(kill_sound[number])
+    
+done = True
+
+if not kill_loop[number]:
+    while True:
+        checkExit()
+
+        draw()
+
+        draw2()
+        
+        update_mouse()
+        update_keys()
+    
+        if button(7,(0,150),15) or (key[pygame.K_SPACE] and not key_pressed):
+            mode = 'menu'
+            
+            menu_pos = [0,0]
+            menu_size = global_scale+2
+
+            frame = 0
+            frame2 = 0
+            time = 0
+            opacity = 0
+                        
+            update_volume(0.6)
+            play_music('elevator')
+
+            unload_sprites(['background','obstacle','money','roll','paper','skin','smack','people','speed'])
+
+            break
+        
+        if hitboxes:
+            show_fps()
+
+        update_key_pressed()
+
+        pygame.display.update()
+        clock.tick(60)

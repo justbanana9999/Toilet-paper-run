@@ -1,0 +1,52 @@
+time += 1
+
+menu_pos[0] = smooth(menu_pos[0],-(mouse_pos[0])/20,15)
+menu_pos[1] = smooth(menu_pos[1],-(mouse_pos[1])/30,15)
+
+menu_size = smooth(menu_size,global_scale+1,5)
+
+display_image(sprites['menu'][frame],menu_pos,menu_size)
+
+if opacity < 50:
+    opacity += 5
+
+transparent_surf.set_alpha(opacity)
+screen.blit(transparent_surf,(0,0))
+
+if time%10 == 0:
+    time = 0
+    frame += 1
+    frame %= 4
+
+text = font.render('ARE YOU SURE YOU',True,(255,100,100))
+display_image(text,(0,-150),1.5)
+text = font.render('WANT TO RESET?',True,(255,100,100))
+display_image(text,(0,-50),1.5)
+
+#quit
+if button(12,(150,150)):
+    with open('Info','w') as file:
+        file.write(f'total_money = 0\n')
+        file.write(f'score = 0\n')
+        file.write(f'high_score = 0\n')
+        file.write(f'global_volume = 1\n')
+        file.write(f'theme = 0\n')
+        file.write(f'bought = [1,0,0,0,0,0]\n')
+        file.write(f'hitboxes = False\n')
+        
+        total_money = 0
+        score = 0
+        high_score = 0
+        global_volume = 1
+        theme = 0
+        bought = [1,0,0,0,0,0]
+        hitboxes = False
+        
+        mode = 'menu'
+        
+        load_sprites(['title'])        
+
+    update_keys()
+
+if button(6,(-150,150)) or (key[pygame.K_ESCAPE] and not key_pressed):
+    mode = 'options'

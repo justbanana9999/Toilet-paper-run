@@ -1,0 +1,132 @@
+checkExit()
+
+menu_pos[0] = smooth(menu_pos[0],-(mouse_pos[0])/15+30,15)
+menu_pos[1] = smooth(menu_pos[1],-(mouse_pos[1])/22,15)
+
+menu_size = smooth(menu_size,global_scale,5)
+
+if fancy:
+    display_image(sprites['menu'][frame],menu_pos,menu_size)
+else:
+    display_image(sprites['menu'][frame])
+
+if opacity > 0:
+    opacity -= 5
+
+transparent_surf.set_alpha(opacity)
+screen.blit(transparent_surf,(0,0))
+
+if fancy:
+    display_image(sprites['title'][0],(menu_pos[0]/4,menu_pos[1]/4-200),global_scale,math.sin(math.radians(time*1.5))*2)
+else:
+    display_image(sprites['title'][0],(0,-200))
+
+time += 1
+
+if time%4 == 0:
+    frame += 1
+    frame %= 4
+
+#play
+if button(0,(10,180)) or (key[pygame.K_SPACE] and not key_pressed):    
+    mode = 'play'
+    
+    frame = 0
+    time = 0
+    
+    target_speed = 5
+    
+    background_pos = 0
+    
+    player_pos = -225
+    player_vel = 0
+    player_y = -100
+    
+    papers = []
+    paper_type = []
+    dent_pos = [-1000,-1000]
+    
+    obstacles = []
+    obstacle_types = []
+    obstacle_timer = 0
+    hit_timer = 0
+    
+    money = []
+    money_types = []
+    money_timer = 0
+    
+    score = 0
+    
+    people_pos = [-250,-250]
+    
+    key_pressed = False
+    
+    boost_time = 0
+    
+    prev_boost = False
+    
+    gun_time = 0
+    bullets = []
+    
+    smack_time = 0
+    
+    speed_time = 0
+    
+    play_music(theme_music[theme])
+
+    load_sprites(['background','obstacle','money','roll','paper','skin','smack','people','machine_gun','speed'])
+
+#themes
+if button(1,(310,180)) or (key[pygame.K_t] and not key_pressed):
+    mode = 'themes'
+    
+    page = 0
+    key_pressed = True
+    pos = 0
+
+    unload_sprites(['title'])
+
+    load_sprites(['theme','arrow'])
+
+text = font.render(f'THEME: {theme_names[theme]}',True,(87,150,217))
+display_image(text,(310,90),0.6)
+
+#help
+if button(3,(-250,180)) or (key[pygame.K_h] and not key_pressed):
+    mode = 'help'
+    
+    frame2 = 0
+    
+    unload_sprites(['title'])
+    
+    load_sprites(['help'])
+
+#options
+rect = display_image(sprites['options'][0],(-400,200),option_button_size)
+
+if rect.collidepoint(mouse_pos):
+    option_button_size = 7
+else:
+    option_button_size = 6
+
+if check_click(rect) or key[pygame.K_o]:
+    mode = 'options'
+
+    clicked = False
+
+    play_sound('click')
+
+    unload_sprites(['title'])
+
+#quit
+if key[pygame.K_ESCAPE] and not key_pressed:
+    mode = 'sure'
+    
+text = font.render(f'${total_money}',True,(0,0,0))
+display_image(text,(310,-150),1)
+
+text = font.render(f'HIGHSCORE: {high_score}',True,(255,127,0))
+display_image(text,(-330,-150),0.6)
+
+pygame.display.update()
+clock.tick(60)

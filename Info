@@ -1,0 +1,8 @@
+total_money = 9
+score = 59
+high_score = 186
+global_volume = 1
+theme = 0
+bought = [1, 0, 0, 0, 0, 0]
+hitboxes = False
+fancy = True

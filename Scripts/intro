@@ -1,0 +1,37 @@
+for k in range(len(sprites['intro'])):            
+    for i in range(10):
+        if k == 17 and i == 0:
+            replace_music('elevator',0.4)
+        
+        checkExit()
+        
+        update_mouse()
+        update_keys()
+        
+        screen.fill(b)
+        display_image(sprites['intro'][k],[0,0],11)
+        
+        if button(5,(350,-250)) or (key[pygame.K_SPACE] and not key_pressed):
+            mode = 'menu'
+            
+            time = 0
+            frame = 0
+                        
+            update_volume(0.6)
+            break
+        
+        pygame.display.update()
+        clock.tick(60)
+    
+    if mode == 'menu':
+        break
+
+mode = 'menu'
+
+update_volume(0.6)
+
+unload_sprites(['intro'])
+load_sprites(['menu','options','title'])
+
+if k < 17:
+    replace_music('elevator',0.4)
